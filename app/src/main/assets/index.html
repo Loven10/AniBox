@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AniBox</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #101010;
+  --panel: #191919;
+  --line: #2b2b2b;
+  --text: #f5f5f5;
+  --muted: #999;
+  --accent: #d7ff64;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+header {
+  padding: 22px 20px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.logo { font-size: 25px; font-weight: 800; letter-spacing: -1px; }
+.logo span { color: var(--accent); }
+button {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.add {
+  background: var(--accent);
+  color: #111;
+  padding: 11px 15px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+main { padding: 10px 20px 40px; }
+h1 { font-size: 28px; margin: 16px 0 6px; }
+.subtitle { color: var(--muted); font-size: 14px; }
+.search {
+  width: 100%;
+  margin: 22px 0;
+  padding: 15px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  color: white;
+  outline: none;
+}
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0 15px;
+}
+.section-title h2 { font-size: 18px; margin: 0; }
+.count { color: var(--muted); font-size: 13px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 13px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  overflow: hidden;
+}
+.poster {
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #252525;
+  color: #777;
+  font-size: 35px;
+  font-weight: bold;
+}
+.card-info { padding: 12px; }
+.card-title {
+  font-size: 15px;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+.card-meta { color: var(--muted); font-size: 12px; margin-top: 7px; }
+.card-actions { display: flex; gap: 7px; margin-top: 12px; }
+.small {
+  background: #303030;
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  flex: 1;
+  font-size: 12px;
+}
+.primary { background: var(--accent); color: #111; }
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 45px 10px;
+  border: 1px dashed #353535;
+  border-radius: 15px;
+  grid-column: 1/-1;
+}
+.back { background: #292929; color: white; padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; }
+.row {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.row button { background: #303030; color: white; padding: 9px; border-radius: 8px; }
+.row .watched { color: var(--accent); }
+input[type=text], input[type=number] {
+  width: 100%;
+  padding: 13px;
+  margin: 7px 0 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 10px;
+  color: white;
+}
+label { color: var(--muted); font-size: 13px; }
+.form-actions { display: flex; gap: 10px; margin-top: 10px; }
+.hidden { display: none !important; }
+.progress {
+  height: 4px;
+  background: #333;
+  border-radius: 5px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.progress div { height: 100%; background: var(--accent); }
+footer { text-align: center; color: #666; font-size: 12px; padding: 15px; }
+@media(min-width:600px) {
+  main, header { max-width: 850px; margin-left: auto; margin-right: auto; }
+  .grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Ani<span>Box.</span></div>
+  <button class="add" onclick="showForm()">＋ Add Anime</button>
+</header>
+
+<main>
+  <section id="library">
+    <h1>Your library.</h1>
+    <div class="subtitle">Your anime collection, all in one place.</div>
+    <input class="search" id="search" placeholder="Search your library..." oninput="renderLibrary()">
+    <div class="section-title">
+      <h2>My Anime</h2>
+      <span class="count" id="total">0 titles</span>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="animePage" class="hidden">
+    <button class="back" onclick="goLibrary()">← Library</button>
+    <h1 id="animeTitle"></h1>
+    <div class="subtitle" id="animeProgress"></div>
+    <div class="section-title">
+      <h2>Seasons</h2>
+      <button class="add" onclick="addSeason()">＋ Season</button>
+    </div>
+    <div class="grid" id="seasons"></div>
+  </section>
+
+  <section id="seasonPage" class="hidden">
+    <button class="back" onclick="openAnime(currentAnime)">← Seasons</button>
+    <h1 id="seasonTitle"></h1>
+    <div class="subtitle" id="seasonProgress"></div>
+    <div class="section-title">
+      <h2>Episodes</h2>
+      <button class="add" onclick="addEpisode()">＋ Episode</button>
+    </div>
+    <div id="episodes"></div>
+  </section>
+
+  <section id="formPage" class="hidden">
+    <button class="back" onclick="goLibrary()">← Cancel</button>
+    <h1>Add anime.</h1>
+    <div class="subtitle">Start building your collection.</div>
+    <label for="animeName">Anime title</label>
+    <input id="animeName" type="text" placeholder="e.g. My Hero Academia">
+    <label for="animePoster">Poster image URL (optional)</label>
+    <input id="animePoster" type="text" placeholder="https://...">
+    <button class="add" onclick="saveAnime()">Create Anime</button>
+  </section>
+</main>
+<footer>AniBox · Your personal anime library</footer>
+
+<script>
+const KEY = 'anibox-library-v1';
+let library = [];
+let currentAnime = null;
+let currentSeason = null;
+
+try { library = JSON.parse(localStorage.getItem(KEY) || '[]'); }
+catch(e) { library = []; }
+
+function persist() {
+  localStorage.setItem(KEY, JSON.stringify(library));
+}
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+function safe(text) {
+  return String(text).replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
+function page(name) {
+  ['library','animePage','seasonPage','formPage'].forEach(id =>
+    document.getElementById(id).classList.toggle('hidden', id !== name)
+  );
+}
+function showForm() {
+  document.getElementById('animeName').value = '';
+  document.getElementById('animePoster').value = '';
+  page('formPage');
+}
+function saveAnime() {
+  const name = document.getElementById('animeName').value.trim();
+  const poster = document.getElementById('animePoster').value.trim();
+  if (!name) { alert('Enter an anime title first.'); return; }
+  library.push({id:uid(), name, poster, seasons:[]});
+  persist();
+  renderLibrary();
+  goLibrary();
+}
+function goLibrary() {
+  currentAnime = null;
+  currentSeason = null;
+  page('library');
+  renderLibrary();
+}
+function renderLibrary() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const items = library.filter(a => a.name.toLowerCase().includes(q));
+  document.getElementById('total').textContent = library.length + ' titles';
+  const grid = document.getElementById('grid');
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty">No anime yet.<br>Add your first title above.</div>';
+    return;
+  }
+  grid.innerHTML = items.map(a => {
+    const eps = a.seasons.reduce((n,s) => n+s.episodes.length,0);
+    const seen = a.seasons.reduce((n,s) => n+s.episodes.filter(e=>e.watched).length,0);
+    const poster = a.poster
+      ? '<img src="'+safe(a.poster)+'" alt="" style="width:100%;height:150px;object-fit:cover">'
+      : '<div class="poster">A.</div>';
+    return '<article class="card">'+poster+
+      '<div class="card-info"><div class="card-title">'+safe(a.name)+'</div>'+
+      '<div class="card-meta">'+a.seasons.length+' seasons · '+seen+'/'+eps+' watched</div>'+
+      '<div class="progress"><div style="width:'+(eps?seen/eps*100:0)+'%"></div></div>'+
+      '<div class="card-actions"><button class="small primary" onclick="openAnime(\''+a.id+'\')">Open</button>'+
+      '<button class="small" onclick="deleteAnime(\''+a.id+'\')">Delete</button></div></div></article>';
+  }).join('');
+}
+function deleteAnime(id) {
+  if (!confirm('Delete this anime and all its seasons?')) return;
+  library = library.filter(a=>a.id!==id);
+  persist();
+  renderLibrary();
+}
+function openAnime(id) {
+  currentAnime = library.find(a=>a.id===id);
+  if (!currentAnime) return goLibrary();
+  currentSeason = null;
+  page('animePage');
+  document.getElementById('animeTitle').textContent = currentAnime.name;
+  const eps = currentAnime.seasons.reduce((n,s)=>n+s.episodes.length,0);
+  const seen = currentAnime.seasons.reduce((n,s)=>n+s.episodes.filter(e=>e.watched).length,0);
+  document.getElementById('animeProgress').textContent = seen+' of '+eps+' episodes watched';
+  renderSeasons();
+}
+function renderSeasons() {
+  const box = document.getElementById('seasons');
+  if (!currentAnime.seasons.length) {
+    box.innerHTML = '<div class="empty">No seasons yet.<br>Create your first season.</div>';
+    return;
+  }
+  box.innerHTML = currentAnime.seasons.map((s,i)=>
+    '<article class="card"><div class="poster">S'+(i+1)+'</div>'+
+    '<div class="card-info"><div class="card-title">'+safe(s.name)+'</div>'+
+    '<div class="card-meta">'+s.episodes.length+' episodes</div>'+
+    '<div class="card-actions"><button class="small primary" onclick="openSeason(\''+s.id+'\')">Open Season</button>'+
+    '<button class="small" onclick="deleteSeason(\''+s.id+'\')">Delete</button></div></div></article>'
+  ).join('');
+}
+function addSeason() {
+  const name = prompt('Season name:', 'Season '+(currentAnime.seasons.length+1));
+  if (!name || !name.trim()) return;
+  currentAnime.seasons.push({id:uid(),name:name.trim(),episodes:[]});
+  persist();
+  openAnime(currentAnime.id);
+}
+function deleteSeason(id) {
+  if (!confirm('Delete this season and its episodes?')) return;
+  currentAnime.seasons = currentAnime.seasons.filter(s=>s.id!==id);
+  persist();
+  openAnime(currentAnime.id);
+}
+function openSeason(id) {
+  currentSeason = currentAnime.seasons.find(s=>s.id===id);
+  if (!currentSeason) return;
+  page('seasonPage');
+  document.getElementById('seasonTitle').textContent = currentSeason.name;
+  renderEpisodes();
+}
+function addEpisode() {
+  const name = prompt('Episode title:', 'Episode '+(currentSeason.episodes.length+1));
+  if (!name || !name.trim()) return;
+  currentSeason.episodes.push({id:uid(),name:name.trim(),watched:false,videoUrl:''});
+  persist();
+  renderEpisodes();
+}
+function renderEpisodes() {
+  const seen = currentSeason.episodes.filter(e=>e.watched).length;
+  document.getElementById('seasonProgress').textContent =
+    seen+' of '+currentSeason.episodes.length+' episodes watched';
+  const box = document.getElementById('episodes');
+  if (!currentSeason.episodes.length) {
+    box.innerHTML = '<div class="empty">No episodes yet.<br>Add an episode to get started.</div>';
+    return;
+  }
+  box.innerHTML = currentSeason.episodes.map((e,i)=>
+    '<div class="row"><div style="flex:1;min-width:0"><b>'+(i+1)+'. '+safe(e.name)+'</b>'+
+    '<div class="card-meta">'+(e.watched?'Watched':'Not watched')+'</div></div>'+
+    '<button class="'+(e.watched?'watched':'')+'" onclick="toggleWatched(\''+e.id+'\')">'+
+    (e.watched?'✓':'○')+'</button>'+
+    '<button onclick="chooseVideo(\''+e.id+'\')">Video</button></div>'
+  ).join('');
+}
+function toggleWatched(id) {
+  const e = currentSeason.episodes.find(e=>e.id===id);
+  if (!e) return;
+  e.watched=!e.watched;
+  persist();
+  renderEpisodes();
+}
+function chooseVideo(id) {
+  alert('Video import will be connected in the Android app stage.');
+}
+renderLibrary();
+</script>
+</body>
+</html>
